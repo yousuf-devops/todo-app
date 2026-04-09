@@ -1,7 +1,7 @@
 const express = require('express');
 const mysql = require('mysql2/promise');
 const cors = require('cors');
-const app = express();   // Todo App Backend v2
+const app = express();   // Todo App Backend v3
 
 app.use(cors({
   origin: '*',
