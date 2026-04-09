@@ -12,6 +12,24 @@ const db = mysql.createPool({
   database: process.env.DB_NAME || 'tododb',
 });
 
+// ─── AUTO CREATE TABLE ON STARTUP ───
+async function initDB() {
+  try {
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS todos (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        done BOOLEAN DEFAULT false,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    console.log('todos table ready');
+  } catch (err) {
+    console.error('DB init error:', err);
+  }
+}
+initDB();
+
 app.get('/todos', async (req, res) => {
   const [rows] = await db.query('SELECT * FROM todos');
   res.json(rows);
