@@ -2,7 +2,12 @@ const express = require('express');
 const mysql = require('mysql2/promise');
 const cors = require('cors');
 const app = express();
-app.use(cors());
+
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+  allowedHeaders: ['Content-Type']
+}));
 app.use(express.json());
 
 const db = mysql.createPool({
@@ -12,7 +17,6 @@ const db = mysql.createPool({
   database: process.env.DB_NAME || 'tododb',
 });
 
-// ─── AUTO CREATE TABLE ON STARTUP ───
 async function initDB() {
   try {
     await db.query(`

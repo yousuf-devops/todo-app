@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
+  <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
   <title>Todo App</title>
   <style>
     body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 0 20px; }
@@ -20,25 +21,41 @@
   <script>
     const API = 'http://todo-app-alb-1714007384.us-west-2.elb.amazonaws.com';
     async function load() {
-      const res = await fetch(API + '/todos');
-      const todos = await res.json();
-      document.getElementById('list').innerHTML = todos.map(t =>
-        `<li><span style="text-decoration:${t.done?'line-through':''}">${t.title}</span>
-         <div>
-           <button onclick="toggle(${t.id},${!t.done})">${t.done?'Undo':'Done'}</button>
-           <button onclick="del(${t.id})">Delete</button>
-         </div></li>`
-      ).join('');
+      try {
+        const res = await fetch(API + '/todos');
+        const todos = await res.json();
+        document.getElementById('list').innerHTML = todos.map(t =>
+          `<li><span style="text-decoration:${t.done?'line-through':''}">${t.title}</span>
+           <div>
+             <button onclick="toggle(${t.id},${!t.done})">${t.done?'Undo':'Done'}</button>
+             <button onclick="del(${t.id})">Delete</button>
+           </div></li>`
+        ).join('');
+      } catch(e) {
+        console.error('Load error:', e);
+      }
     }
     async function addTodo() {
       const title = document.getElementById('title').value;
       if (!title) return;
-      await fetch(API + '/todos', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({title}) });
-      document.getElementById('title').value = '';
-      load();
+      try {
+        await fetch(API + '/todos', {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({title})
+        });
+        document.getElementById('title').value = '';
+        load();
+      } catch(e) {
+        console.error('Add error:', e);
+      }
     }
     async function toggle(id, done) {
-      await fetch(API + '/todos/' + id, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({done}) });
+      await fetch(API + '/todos/' + id, {
+        method:'PATCH',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({done})
+      });
       load();
     }
     async function del(id) {
